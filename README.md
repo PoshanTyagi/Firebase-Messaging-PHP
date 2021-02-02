@@ -27,7 +27,7 @@ var_dump($response->getStatusCode());
 
 ### Send Notification to Multiple Clients
 
-#### method 1
+#### Method 1
 
 ```php
 use FirebaseMessagingPhp\FirebaseClient;
@@ -49,7 +49,7 @@ $response = $client->send($notification);
 var_dump($response->getStatusCode());
 ```
 
-#### method 2
+#### Method 2
 
 ```php
 use FirebaseMessagingPhp\FirebaseClient;
@@ -70,4 +70,3 @@ $response = $client->send($notification);
 
 var_dump($response->getStatusCode());
 ```
-````````
