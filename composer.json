@@ -1,0 +1,18 @@
+{
+    "name": "code-of-brain/firebase-messaging-php",
+    "description": "This is simple to use PHP package for sending firebase messages.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Poshan Tyagi",
+            "email": "poshantyagiofficial@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "FirebaseMessagingPhp\\": "src/"
+        }
+    }
+}
