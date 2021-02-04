@@ -7,9 +7,10 @@ class FirebaseNotification
 {
     private $title = '';
     private $body = '';
-    private $priority = 'normal';
-    private $tokens = [];
-
+    private $priority = '';
+    private $data = [];
+    private $timeToLive = null;
+    
     /**
      * This method is use for setting Title of Notification
      * @param string $title
@@ -44,42 +45,47 @@ class FirebaseNotification
     }
 
     /**
-     * This method is use to add Token
-     * @param string $token
+     * This method is use for setting Priority of Notification
+     * @param array $data
      * @return FirebaseNotification 
      */
-    public function addToken(string $token): FirebaseNotification
+    public function setData(array $data): FirebaseNotification
     {
-        $this->tokens[] = $token;
+        $this->data = $data;
         return $this;
     }
 
     /**
-     * This method is use to add mutiple Tokens
-     * @param array $tokens
+     * This method is use for setting Priority of Notification
+     * @param int $timeToLive
      * @return FirebaseNotification 
      */
-    public function addTokens(array $tokens): FirebaseNotification
+    public function setTimeToLive(int $timeToLive): FirebaseNotification
     {
-        $this->tokens = array_merge($this->tokens, $tokens);
+        $this->timeToLive = $timeToLive;
         return $this;
     }
 
     /**
      * This method is use to get json string of Notification
-     * @return string
+     * @return array
      */
-    public function getData(): string
+    public function getData(): array
     {
-        $data = array(
-            'registration_ids' => $this->tokens,
-            'priority' => $this->priority,
+        $body = array(
             'notification' => array(
                 "title" => $this->title,
                 "body" => $this->body
             )
         );
 
-        return json_encode($data);
+        if($this->priority !== '')
+            $body['priority'] = $this->priority;
+        if($this->data !== [])
+            $body['data'] = $this->data;
+        if($this->timeToLive !== null)
+            $body['time_to_live'] = $this->timeToLive;
+
+        return $body;
     }
 }

@@ -15,20 +15,19 @@ use FirebaseMessagingPhp\FirebaseNotification;
 $client = new FirebaseClient(SERVER_KEY);
 
 $notification = new FirebaseNotification();
-$notification->setPriority('high');
-$notification->setTitle('title');
-$notification->setBody('body');
-$notification->addToken('CLIENT_TOKEN');
 
-$response = $client->send($notification);
+$notification->setTitle('title')
+    ->setBody('body');
+
+$clientToken = ['CLIENT_ID_1' => 'CLIENT_TOKEN_1'];
+
+$response = $client->send($notification, $clientToken);
 
 var_dump($response);
 ```
 
 ## Send Notification to Multiple Clients
 
-### Method 1
-
 ```php
 use FirebaseMessagingPhp\FirebaseClient;
 use FirebaseMessagingPhp\FirebaseNotification;
@@ -36,37 +35,13 @@ use FirebaseMessagingPhp\FirebaseNotification;
 $client = new FirebaseClient(SERVER_KEY);
 
 $notification = new FirebaseNotification();
-$notification->setPriority('high');
+
 $notification->setTitle('title');
-$notification->setBody('body');
-$notification->addToken('CLIENT_TOKEN_1');
-$notification->addToken('CLIENT_TOKEN_2');
-$notification->addToken('CLIENT_TOKEN_3');
-$notification->addToken('CLIENT_TOKEN_4');
+    ->setBody('body');
 
-$response = $client->send($notification);
+$clientTokens = ['CLIENT_ID_1' => 'CLIENT_TOKEN_1', 'CLIENT_ID_2' => 'CLIENT_TOKEN_2', 'CLIENT_ID_3' => 'CLIENT_TOKEN_3'];
 
-var_dump($response);
-```
-
-### Method 2
-
-```php
-use FirebaseMessagingPhp\FirebaseClient;
-use FirebaseMessagingPhp\FirebaseNotification;
-
-$client = new FirebaseClient(SERVER_KEY);
-
-$notification = new FirebaseNotification();
-$notification->setPriority('high');
-$notification->setTitle('title');
-$notification->setBody('body');
-
-$tokens = ['CLIENT_TOKEN_1', 'CLIENT_TOKEN_2', 'CLIENT_TOKEN_3'];
-
-$notification->addTokens($tokens);
-
-$response = $client->send($notification);
+$response = $client->send($notification, $clientTokens);
 
 var_dump($response);
 ```
@@ -79,9 +54,32 @@ use FirebaseMessagingPhp\FirebaseNotification;
 
 $client = new FirebaseClient(SERVER_KEY);
 
-$userTokens = ['CLIENT_ID_1' => 'CLIENT_TOKEN_1', 'CLIENT_ID_2' => 'CLIENT_TOKEN_2', 'CLIENT_ID_3' => 'CLIENT_TOKEN_3'];
+$clientTokens = ['CLIENT_ID_1' => 'CLIENT_TOKEN_1', 'CLIENT_ID_2' => 'CLIENT_TOKEN_2', 'CLIENT_ID_3' => 'CLIENT_TOKEN_3'];
 
-$response = $client->verifyTokens($userTokens);
+$response = $client->verifyTokens($clientTokens);
 
 var_dump($response);
+```
+
+## Optional Parameters
+
+```php
+$notification = new FirebaseNotification();
+
+// You can add priority to notification by using setPriority method 
+// Priority can be 'high' and 'normal' 
+// By default priority is 'normal'
+
+$notification->setPriority('high');
+
+// You can add extra data to notification by using setData method 
+// Data should be a array of string key-value pair
+
+$notification->setData(array('name' => 'user', 'id' => '1111'));
+
+// This method is use to specifies how long (in seconds) the message should be kept in FCM storage if the device is offline
+// The maximum time to live supported is 4 weeks, and the default value is 4 weeks
+
+$notification->setTimeToLive( 60 * 60 ); // 60 * 60 = 3600 means message should be kept in FCM storage for 3600 seconds (1 hour)
+
 ```

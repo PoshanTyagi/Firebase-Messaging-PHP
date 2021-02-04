@@ -32,16 +32,27 @@ class FirebaseClient
     /**
      * This method use to send Notification
      * @param FirebaseNotification $firebaseNotification
-     * @return void 
+     * @param array $clientTokens
+     * @return array
      */
-    public function send(FirebaseNotification $firebaseNotification)
+    public function send(FirebaseNotification $firebaseNotification, array $clientTokens)
     {
+        if (empty($clientTokens))
+            return array('success' => false, 'error' => 'clientTokens array cannot be empty');
+
+        $tokens = array_values($clientTokens);
+        $users = array_keys($clientTokens);
+
+        $body = $firebaseNotification->getData();
+
+        $body['registration_ids'] = $tokens;
+
+        $body = json_encode($body);
+
         $headers = array(
             'Authorization: key=    ' . $this->serverId,
             'Content-Type: application/json'
         );
-
-        $body = $firebaseNotification->getData();
 
         try {
             $ch = curl_init();
@@ -52,25 +63,44 @@ class FirebaseClient
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 
             $result = curl_exec($ch);
-            curl_close($ch);
+            $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-            return $result;
+            curl_close($ch);
         } catch (\Exception $e) {
-            return false;
+            return array('success' => false, 'error' => $e->getMessage());
+        }
+        if($statusCode !== 200)
+            return array('success' => false, 'error' => $result);
+
+        $response = json_decode($result, true)['results'];
+        $n = count($response);
+
+        $check['valid'] = [];
+        $check['invalid'] = [];
+
+        for ($i = 0; $i < $n; $i++) {
+            if (isset($response[$i]['error'])) {
+                $check['invalid'][] = $users[$i];
+            } else {
+                $check['valid'][] = $users[$i];
+            }
         }
 
-        return false;
+        return array('success' => true, 'data' => json_decode($result, true), 'result' => $check);
     }
 
     /**
      * This method use to Check Users Token
-     * @param array $userTokens
-     * @return array|bool
+     * @param array $clientTokens
+     * @return array
      */
-    public function verifyTokens(array $userTokens)
+    public function verifyTokens(array $clientTokens)
     {
-        $tokens = array_values($userTokens);
-        $users = array_keys($userTokens);
+        if (empty($clientTokens))
+            return array('success' => false, 'error' => 'clientTokens array cannot be empty');
+
+        $tokens = array_values($clientTokens);
+        $users = array_keys($clientTokens);
 
         $data = array(
             'registration_ids' => $tokens,
@@ -84,9 +114,6 @@ class FirebaseClient
             'Content-Type: application/json'
         );
 
-        $check['valid'] = [];
-        $check['invalid'] = [];
-
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, FirebaseClient::API_URL);
@@ -96,22 +123,30 @@ class FirebaseClient
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 
             $response = curl_exec($ch);
+            $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
             curl_close($ch);
         } catch (\Exception $e) {
-            return false;
+            return array('success' => false, 'error' => $e->getMessage());
         }
 
-        $response = json_decode($response)->results;
+        if($statusCode !== 200)
+            return array('success' => false, 'error' => $response);
+
+        $response = json_decode($response, true)['results'];
         $n = count($response);
 
+        $check['valid'] = [];
+        $check['invalid'] = [];
+
         for ($i = 0; $i < $n; $i++) {
-            if (isset($response[$i]->error)) {
+            if (isset($response[$i]['error'])) {
                 $check['invalid'][] = $users[$i];
             } else {
                 $check['valid'][] = $users[$i];
             }
         }
 
-        return $check;
+        return array('success' => true, 'result' => $check);
     }
 }
